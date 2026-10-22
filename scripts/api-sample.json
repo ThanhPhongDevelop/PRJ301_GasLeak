@@ -1,0 +1,5 @@
+{"sessions":[
+ {"seq":1,"measured_at":"2026-10-08 06:00:00","mq2_raw":900,"mq135_raw":800,"temp_c":27,"rh_pct":60},
+ {"seq":2,"measured_at":"2026-10-08 06:00:30","mq2_raw":1700,"mq135_raw":900,"temp_c":27,"rh_pct":60},
+ {"seq":3,"measured_at":"2026-10-08 06:01:00","mq2_raw":2700,"mq135_raw":900,"temp_c":27,"rh_pct":60},
+ {"seq":4,"measured_at":"2026-10-08 06:01:30","mq2_raw":1000,"mq135_raw":900,"temp_c":27,"rh_pct":null}]}

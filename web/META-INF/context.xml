@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- /PRJ301 matches the URLs used by DataReplayer and the ESP32 firmware -->
+<Context path="/PRJ301">
+    <!-- SameSite=Lax on the session cookie: a second layer of CSRF protection -->
+    <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor" sameSiteCookies="lax"/>
+</Context>

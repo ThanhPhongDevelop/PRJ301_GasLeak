@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- NetBeans regenerates nbproject/build-impl.xml from nbproject/project.xml when the project is opened. -->
+<project name="PRJ301_GasLeak" default="default" basedir=".">
+    <description>Builds, tests, and runs the project PRJ301_GasLeak.</description>
+    <import file="nbproject/build-impl.xml"/>
+</project>

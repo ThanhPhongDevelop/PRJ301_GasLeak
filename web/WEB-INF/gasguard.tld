@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+        version="2.1">
+    <description>Formatting helpers for the GasGuard pages</description>
+    <tlib-version>1.0</tlib-version>
+    <short-name>gg</short-name>
+    <uri>/WEB-INF/gasguard.tld</uri>
+    <function>
+        <name>label</name>
+        <function-class>util.ViewFunctions</function-class>
+        <function-signature>java.lang.String label(java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>severity</name>
+        <function-class>util.ViewFunctions</function-class>
+        <function-signature>java.lang.String severity(java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>num</name>
+        <function-class>util.ViewFunctions</function-class>
+        <function-signature>java.lang.String num(java.lang.Double)</function-signature>
+    </function>
+    <function>
+        <name>signed</name>
+        <function-class>util.ViewFunctions</function-class>
+        <function-signature>java.lang.String signed(java.lang.Double)</function-signature>
+    </function>
+    <function>
+        <name>pct</name>
+        <function-class>util.ViewFunctions</function-class>
+        <function-signature>java.lang.String pct(java.lang.Double)</function-signature>
+    </function>
+    <function>
+        <name>time</name>
+        <function-class>util.ViewFunctions</function-class>
+        <function-signature>java.lang.String time(java.sql.Timestamp)</function-signature>
+    </function>
+</taglib>

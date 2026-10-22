@@ -1,0 +1,9 @@
+-- Optional: drops the database so 01 -> 02 -> 03 can be run again from scratch.
+USE master;
+GO
+IF DB_ID(N'PRJ301_GAS') IS NOT NULL
+BEGIN
+    ALTER DATABASE PRJ301_GAS SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE PRJ301_GAS;
+END
+GO

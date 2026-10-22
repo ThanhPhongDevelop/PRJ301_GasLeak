@@ -1,0 +1,4 @@
+# Connection used by util.DbContext. Each team member edits this file for their own SQL Server.
+db.url=jdbc:sqlserver://localhost:1433;databaseName=PRJ301_GAS;encrypt=false
+db.user=sa
+db.password=YOUR_PASSWORD=12345

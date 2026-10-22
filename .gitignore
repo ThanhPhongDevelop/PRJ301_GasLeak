@@ -1,0 +1,7 @@
+build/
+dist/
+nbproject/private/
+# public dataset: download it from UCI, do not commit it (HT_Sensor_dataset.dat is over 100 MB)
+*.dat
+gas_dataset.csv
+src/java/db.properties
