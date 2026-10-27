@@ -33,6 +33,11 @@ public final class ViewFunctions {
         return value == null || value.isNaN() ? "n/a" : String.format(Locale.ROOT, "%+.1f", value);
     }
 
+    /** Plain number for levels, offsets and scales: 2500.0 -> "2500", 0.98 -> "0.98", null -> "". */
+    public static String plain(Double value) {
+        return value == null || value.isNaN() || value.isInfinite() ? "" : FormUtils.formatNumber(value);
+    }
+
     public static String pct(Double value) {
         return value == null || value.isNaN() ? "n/a" : String.format(Locale.ROOT, "%.0f%%", value * 100);
     }

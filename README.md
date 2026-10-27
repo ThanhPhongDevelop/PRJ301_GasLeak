@@ -7,14 +7,14 @@ Phát hiện rò rỉ khí gas trong bếp gia đình, có bù ảnh hưởng c�
 - **Giai đoạn 1 (nền tảng)**: CSDL, bảo mật, CRUD mẫu khu bếp, quản lý người dùng, nhật ký kiểm toán.
 - **Giai đoạn 2 (luồng dữ liệu và vận hành)**: API nhận phiên từ thiết bị, bù nhiệt độ – độ ẩm, luật cho 6 nhãn, mô hình Weka, cảnh báo hai tầng có bằng chứng, trang phiên, cảnh báo, phiếu bảo trì, điều khiển thiết bị và dashboard tự cập nhật.
 - **Giai đoạn 3, phần backend và bảo mật (xong)**: procedure, DAO và kiểm tra form cho nhà, cảm biến khí, ngưỡng theo khu, liên hệ khẩn cấp, thiết bị (kèm cấp khoá API), và ba thực thể dùng chung còn thiếu: loại cảm biến, hiệu chuẩn, hồ sơ bù; tạo tài khoản và đặt lại mật khẩu ở trang Users; trang My account để đổi mật khẩu; tạm khoá đăng nhập sau 5 lần sai; login SQL quyền tối thiểu; khoá ngoại `Alert → GasEvent`.
-- **Giai đoạn 3, phần giao diện (còn lại)**: 8 controller và các trang JSP cho 8 thực thể trên, theo mục [Bàn giao cho phần giao diện](#bàn-giao-cho-phần-giao-diện).
+- **Giai đoạn 3, phần giao diện (xong)**: 8 controller và 16 trang JSP cho 8 thực thể trên (danh sách có tìm kiếm, lọc, phân trang, xuất CSV; thêm, sửa, xoá), menu gom thành Homes, Devices và Admin. Xem mục [Trang quản lý của giai đoạn 3](#trang-quản-lý-của-giai-đoạn-3).
 - **Mô hình IoT (giảng viên yêu cầu)**: firmware ESP32 và hướng dẫn lắp đã có trong `firmware/`; còn mua linh kiện, lắp, nạp và chạy thử. Xem mục [Mô hình IoT](#mô-hình-iot-esp32).
 
 | Quy mô tối thiểu của đề | Yêu cầu | Hiện có |
 |---|---|---|
 | Bảng | 15 | 25 |
-| Servlet làm Controller | 12 | 12 (thêm 8 khi xong phần giao diện) |
-| Trang JSP | 12 | 16 |
+| Servlet làm Controller | 12 | 20 |
+| Trang JSP | 12 | 32 |
 | Stored procedure | 10 | 40 |
 | View | 2 | 14 |
 | API | 2 | 3 |
@@ -26,7 +26,7 @@ Phát hiện rò rỉ khí gas trong bếp gia đình, có bù ảnh hưởng c�
 2. **Thư viện**: đã có sẵn trong project và đã khai báo trong `nbproject/project.properties`, không phải tải hay thêm tay. `web/WEB-INF/lib` gồm mssql-jdbc 12.8.1 bản jre8, jstl 1.2, jbcrypt 0.4, gson 2.10.1 và weka 3.8.6; `lib/test` gồm testng 6.9.12 và jcommander 1.71, chỉ dùng khi chạy test, không đóng vào file war. Đề ghi gson 2.8.9 và testng 7.5: hai bản trong project dùng cùng API, đã chạy đủ 74 ca kiểm thử bằng JDK 8. Muốn đổi sang đúng bản của đề thì thay jar và sửa tên trong `project.properties`. Không dùng Maven: đề cấm, và máy phòng thi không có mạng để tải thư viện.
 3. **Mở bằng NetBeans 13**: File → Open Project → chọn thư mục `PRJ301_GasLeak`. Nếu báo thiếu server, chọn Resolve và trỏ tới Tomcat 9.
 4. **Kiểm tra thư viện**: chuột phải project → Properties → Libraries: tab Compile có 5 jar, tab Compile Tests có thêm testng và jcommander. Nếu NetBeans báo Reference Problems, bấm Resolve và chọn lại đúng file trong project.
-5. **Kết nối**: sửa `src/java/db.properties` cho đúng máy mình.
+5. **Kết nối**: chép `src/java/db.properties.example` thành `src/java/db.properties` rồi sửa cho đúng máy mình (file này không đưa lên GitHub).
 6. **Chạy**: Run Project → `http://localhost:8080/PRJ301/`.
 7. **Login quyền tối thiểu** (làm sau khi mọi thứ đã chạy được bằng `sa`): đổi mật khẩu trong `sql/05_app_login.sql`, chạy script, kiểm tra hai dòng kết quả cuối (một dòng `OK, error 229`, một dòng nhật ký mới), rồi sửa `db.properties` thành `db.user=gasguard_app` và mật khẩu vừa đặt. Các công cụ ở mục dưới (`GasToCsv`, `CompensationFitter`, `ModelTrainer`, `DataReplayer`) vẫn chạy được bằng login này. Riêng 3 ca kiểm thử giả mạo nhật ký cần `sa`, xem mục Kiểm thử.
 
@@ -74,7 +74,7 @@ Kiểm tra khoá thiết bị: `curl -H "X-API-Key: device-1-api-key" http://loc
 - Sai mật khẩu 5 lần trong 15 phút thì tài khoản đó tạm bị khoá; thử lại sau 15 phút. Đừng demo việc này bằng `admin` ngay trước lúc quay video.
 - Admin tạo tài khoản ở trang Users ("Add a user"). Để trống ô mật khẩu thì hệ thống sinh mật khẩu tạm 12 ký tự và hiện **một lần** trong thông báo. "Reset password" cũng vậy.
 
-Thiết bị: `ESP32-KITCHEN-01` (khoá `device-1-api-key`) là thiết bị phát lại dữ liệu công khai; `ESP32-REAL-01` (khoá `device-2-api-key`) là mô hình IoT thật, để dữ liệu thật không lẫn với dữ liệu phát lại. Thiết bị đăng ký mới nhận khoá dạng `gg_` + 40 ký tự hex, chỉ hiện một lần; CSDL chỉ giữ SHA-256 của khoá.
+Thiết bị: `ESP32-KITCHEN-01` (khoá `device-1-api-key`) là thiết bị phát lại dữ liệu công khai; `ESP32-REAL-01` (khoá `device-2-api-key`) là mô hình IoT thật, để dữ liệu thật không lẫn với dữ liệu phát lại. Thiết bị đăng ký mới (Devices → Register device) nhận khoá dạng `gg_` + 40 ký tự hex, chỉ hiện một lần; CSDL chỉ giữ SHA-256 của khoá. Bấm "New key" ở trang Devices thì khoá cũ hết hiệu lực ngay, nhớ nạp lại firmware với khoá mới.
 
 ## Ma trận phân quyền
 
@@ -187,7 +187,17 @@ Firmware đã được biên dịch thử không lỗi với gói esp32 bản 2.
 | Sessions | Danh sách phiên (kết quả luật, mô hình, nhãn người gán), trang chi tiết so sánh thô và đã bù, gán/xoá nhãn |
 | Maintenance | Phiếu bảo trì: lọc, của tôi, xuất CSV, đóng phiếu có ghi chú |
 | Control | Khoá điều khiển (một người một lúc), lệnh có hộp xác nhận, lịch sử lệnh; không cho mở van khi còn cảnh báo rò rỉ hoặc lửa chưa xử lý; đăng xuất tự nhả khoá |
-| Users | Tìm, lọc theo vai trò, thêm tài khoản, đổi vai trò, khoá/mở khoá, đặt lại mật khẩu |
+| Homes → Homes | Nhà: tìm theo tên hoặc địa chỉ, chủ nhà, số khu bếp và liên hệ (bấm để mở danh sách lọc sẵn); xoá bị chặn khi nhà còn khu bếp hoặc liên hệ |
+| Homes → Kitchen zones | Khu bếp: lọc theo nhà, ngưỡng ppm, van của khu |
+| Homes → Zone thresholds | Mức cảnh báo và báo động theo khu và loại cảm biến; mỗi cặp một mức, sửa chỉ đổi hai mức; xoá thì luật dùng mức mặc định |
+| Homes → Emergency contacts | Liên hệ khẩn cấp theo nhà, thứ tự gọi, nghe từ mức cảnh báo nào trở lên |
+| Devices → Devices | Đăng ký ESP32 (khoá API hiện một lần), sửa vị trí, firmware, trạng thái; cấp khoá mới; trực tuyến và lần cuối gửi; xoá bị chặn khi đã có lịch sử |
+| Devices → Gas sensors | Cảm biến nối vào thiết bị nào, chân nào, đặt ở khu nào; lọc theo thiết bị, khu, trạng thái |
+| Devices → Sensor types | Loại cảm biến và khoảng hợp lệ (ngoài khoảng là SENSOR_FAULT); 4 loại dựng sẵn không đổi tên, không xoá |
+| Devices → Calibrations | Hiệu chuẩn theo thiết bị và loại cảm biến, đánh số phiên bản, đánh dấu bản hết hạn |
+| Devices → Compensation profiles | Hồ sơ bù nhiệt độ, độ ẩm theo phiên bản; bản mới nhất đang dùng; "Edit as new version" lưu thành bản mới |
+| Admin → Users | Tìm, lọc theo vai trò, thêm tài khoản, đổi vai trò, khoá/mở khoá, đặt lại mật khẩu |
+| Admin → Audit log | Nhật ký kiểm toán có chuỗi băm SHA-256, kiểm tra giả mạo |
 | My account | Thông tin tài khoản, đổi mật khẩu (phải nhập mật khẩu hiện tại) |
 
 ## Bảo mật
@@ -230,9 +240,9 @@ Giai đoạn 3:
 - **"Một phiên là một sự kiện"** theo đề, nhưng một phiên mỗi bản ghi chỉ cho 100 phiên. Nhóm dùng cửa sổ 10 phút cho dữ liệu công khai và giải thích lý do trong báo cáo.
 - **Bốn thao tác cho thực thể dùng chung**: đủ cho người dùng, thiết bị, loại cảm biến, hiệu chuẩn và hồ sơ bù. Các bảng còn lại đang hiểu như sau: `Alert` do hệ thống tạo, sửa là xác nhận hoặc đánh dấu đã xử lý, không xoá; `MaintenanceTicket` mở, xem, đóng kèm ghi chú, không xoá để giữ lịch sử; `AuditLog`, `HashChain` chỉ thêm và xem; `Roles`, `Permissions` là 5 vai trò cố định theo đề, quyền nạp từ `03_seed.sql`; `AlertEvidence` đi kèm cảnh báo. Hồ sơ bù lưu theo phiên bản: sửa là lưu bản mới, chỉ xoá được bản cũ.
 
-## Bàn giao cho phần giao diện
+## Trang quản lý của giai đoạn 3
 
-Backend của 8 thực thể đã xong và có test; còn controller và JSP. Cả 8 URL đã có trong `RESOURCE_BY_PATH` của `SecurityFilter`, nên servlet tạo đúng tên là được bảo vệ ngay. Phần GET (danh sách, lọc, phân trang, xuất CSV, trang sửa) làm theo `KitchenZoneController`; phần POST làm theo khung bên dưới.
+Tám trang đi theo cùng một khuôn. GET làm như `KitchenZoneController`: danh sách (tìm, lọc, phân trang), `action=new`, `action=edit&id=...`, `action=export` (CSV có BOM để Excel đọc đúng tiếng Việt). POST có `action=save` (id rỗng là thêm mới) và `action=delete`; riêng Devices có thêm `action=rotateKey`. Mỗi controller có một trang danh sách `*_list.jsp` và một trang form `*_form.jsp`. `HomeController` là bản dễ đọc nhất để xem khuôn này.
 
 | Controller | Tài nguyên | DAO (actor = id người đang đăng nhập) | Form | Danh sách chọn (`LookupDao`) | Lưu ý |
 |---|---|---|---|---|---|
@@ -245,78 +255,22 @@ Backend của 8 thực thể đã xong và có test; còn controller và JSP. C�
 | `/CalibrationController` | CALIBRATION | `CalibrationDao`: `search(deviceId, sensorTypeId, page, size)`, `listForExport(...)`, `findById`, `save(actor, calibration)` → id, `delete` | `CalibrationForm` | `devices()`, `sensorTypes()` | Số phiên bản do procedure tự tăng theo cặp thiết bị và loại cảm biến. Trang sửa khoá hai ô đó. Đánh dấu bản hết hạn bằng `isExpired()` |
 | `/OperatingProfileController` | PROFILE | `OperatingProfileDao`: `search(deviceId, page, size)`, `listForExport(deviceId)`, `findById`, `save(actor, deviceId, model)` → id, `delete` | `OperatingProfileForm`: `validate(form, errors, basedOn)` trả về `Draft` (thiết bị và hệ số) | `devices()` | Lưu luôn tạo phiên bản mới; bản mới nhất (`isCurrent()`) đang dùng và không xoá được. "Sửa" mở một bản bằng `OperatingProfileForm.of(p)` rồi lưu thành bản mới. Danh sách hiện `getSummary()` và `getSource()` |
 
-Quy tắc khi viết 8 controller này:
+Quy tắc mà 8 controller này tuân theo:
 
 1. **Không gọi `AuditDao.append`**: procedure đã ghi nhật ký trong cùng giao dịch, gọi thêm là ghi hai lần.
 2. Lỗi từ procedure (`BaseDao.isBusinessRule(e)`, mã từ 50000) có câu thông báo viết sẵn, hiện thẳng cho người dùng được. `ProcErrors.fieldOf(e)` cho biết lỗi thuộc ô nào; trả về `null` thì hiện bằng flash. Lỗi khác ném `ServletException`.
 3. `delete(...)` trả `false` khi dòng đã bị người khác xoá: báo "... no longer exists".
 4. Khoá API trong `DeviceKey.getApiKey()` chỉ có ở lần gọi `register` hoặc `rotateKey`: hiện ngay một lần bằng flash (giống mật khẩu tạm ở `UserController`), kèm lời nhắc chép vào firmware. Không ghi khoá ra log hay lưu ở đâu khác.
 5. Form POST có `csrfToken`; dữ liệu in bằng `<c:out>`, trong thuộc tính dùng `fn:escapeXml`; link menu bọc trong `me.can('RESOURCE', 'READ')`; nút ghi bọc trong `me.can('RESOURCE', 'WRITE')`.
-6. Chạy Test Project trước khi push: `SecurityRulesTest` kiểm tra servlet và form mới, `ProcErrorsTest` kiểm tra bảng lỗi.
+6. `SecurityRulesTest` kiểm tra servlet và form mới, `ProcErrorsTest` kiểm tra bảng lỗi: chạy Test Project trước khi push.
 7. Riêng `/OperatingProfileController`: khi lưu từ một bản có sẵn, lấy bản đó bằng `findById(id)` rồi truyền vào `validate(..., basedOn)`; khi tạo mới truyền `null`. Sau đó gọi `save(actor, draft.getDeviceId(), draft.getModel())`.
 
-Khung `doPost` (đã biên dịch thử với mã hiện tại):
+Một số điểm riêng của từng trang:
 
-```java
-@Override
-protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-    int actor = WebUtils.currentUser(req).getUserId();
-    String action = FormUtils.trim(req.getParameter("action"));
-    HomeDao dao = new HomeDao();
-    try {
-        if ("save".equals(action)) {
-            Map<String, String> form = HomeForm.read(req);
-            Map<String, String> errors = new HashMap<String, String>();
-            Home home = HomeForm.validate(form, errors);
-            if (errors.isEmpty()) {
-                try {
-                    dao.save(actor, home); // the procedure checks again and writes the audit row
-                } catch (SQLException e) {
-                    if (!BaseDao.isBusinessRule(e)) {
-                        throw e;
-                    }
-                    String field = ProcErrors.fieldOf(e);
-                    if (field == null) { // e.g. the home was deleted meanwhile
-                        WebUtils.flash(req, "error", e.getMessage());
-                        res.sendRedirect(req.getContextPath() + "/HomeController");
-                        return;
-                    }
-                    errors.put(field, e.getMessage());
-                }
-            }
-            if (!errors.isEmpty()) {
-                showForm(req, res, form, errors); // form, errors, lookups -> home_form.jsp
-                return;
-            }
-            WebUtils.flash(req, "ok", "Home saved.");
-        } else if ("delete".equals(action)) {
-            Integer id = FormUtils.parseInt(req.getParameter("id"));
-            if (id == null) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
-            try {
-                boolean deleted = dao.delete(actor, id);
-                WebUtils.flash(req, deleted ? "ok" : "error",
-                        deleted ? "Home deleted." : "That home no longer exists.");
-            } catch (SQLException e) {
-                if (!BaseDao.isBusinessRule(e)) {
-                    throw e;
-                }
-                WebUtils.flash(req, "error", e.getMessage()); // the home still has zones or contacts
-            }
-        } else {
-            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown action");
-            return;
-        }
-    } catch (SQLException e) {
-        throw new ServletException(e);
-    }
-    res.sendRedirect(req.getContextPath() + "/HomeController");
-}
-```
-
-Trang sửa điền sẵn bằng `HomeForm.of(dao.findById(id))`, trang thêm bằng `HomeForm.empty()`; ô `id` để ẩn, rỗng nghĩa là thêm mới.
+- **Zone thresholds, Calibrations, Compensation profiles**: khi sửa, ô khu/thiết bị và loại cảm biến bị khoá trên form, và controller lấy lại hai giá trị đó từ CSDL chứ không tin request, nên không "chuyển" được một bản ghi sang khu hay thiết bị khác.
+- **Devices**: thiết bị mới luôn ở trạng thái ACTIVE; trạng thái chỉ đổi ở trang sửa. Khoá API hiện một lần trong thông báo đầu trang, kèm lời nhắc chép vào `API_KEY` của firmware.
+- **Sensor types**: tên loại dựng sẵn hiện ở dạng chỉ đọc; nút xoá ẩn khi `isLocked()`.
+- **Menu**: link bọc trong `me.can(..., 'READ')`, nhóm Homes, Devices, Admin chỉ hiện khi người dùng đọc được ít nhất một trang trong nhóm.
 
 ## Quy ước khi thêm module mới
 
@@ -327,7 +281,7 @@ Nhân bản theo bộ KitchenZone (`KitchenZoneDao` → `KitchenZoneController` 
 3. Mọi dữ liệu người dùng nhập in ra bằng `<c:out value="..."/>`; trong thuộc tính HTML dùng `${fn:escapeXml(...)}`.
 4. Validate lại ở server, kể cả khi form đã có `required`.
 5. Nhật ký: nếu thao tác ghi đi qua stored procedure có sẵn `Audit_Append` (mọi procedure `*_Save`, `*_Delete` của giai đoạn 3) thì không làm gì thêm; nếu DAO tự chạy câu `INSERT`/`UPDATE` như KitchenZone thì gọi `new AuditDao().append(...)` với diff JSON (dùng `JsonText`).
-6. Thêm link vào menu trong `WEB-INF/jspf/header.jspf`, bọc trong `<c:if test="${me.can('RESOURCE', 'READ')}">`.
+6. Thêm link vào menu trong `WEB-INF/jspf/header.jspf` (trong nhóm Homes, Devices hoặc Admin nếu hợp), bọc trong `<c:if test="${me.can('RESOURCE', 'READ')}">`, và thêm quyền đó vào điều kiện hiện nhóm.
 7. Số và nhãn hiển thị qua hàm `gg:` (`/WEB-INF/gasguard.tld`): `gg:num`, `gg:label`, `gg:time`.
 8. Giao diện, tên biến, tên bảng, chú thích trong mã viết bằng tiếng Anh.
 
@@ -335,6 +289,6 @@ Nhân bản theo bộ KitchenZone (`KitchenZoneDao` → `KitchenZoneController` 
 
 - 74 ca TestNG: luật cho 6 nhãn, bù nhiệt độ – độ ẩm (cả hồ sơ nhập tay), đọc body API, chuyển đổi tệp UCI, đo báo nhầm, kiểm định theo bản ghi, nạp mô hình Weka, CSV, mật khẩu, khoá thiết bị, chuỗi băm, kiểm tra form, bảng lỗi procedure, tên loại cảm biến dựng sẵn khớp giữa SQL và Java, và soát quy tắc bảo mật trên mã nguồn.
 - 4 ca cần SQL Server thật (`AuditTamperDbTest`), tự bỏ qua khi không kết nối được. 3 ca giả mạo nhật ký cần quyền sửa thẳng AuditLog nên chạy bằng `sa`; ca còn lại kiểm tra `gasguard_app` không sửa được nhật ký nên chạy bằng login đó. Muốn chạy đủ 4 ca: chạy Test Project một lần với `db.properties` dùng `sa`, một lần dùng `gasguard_app`.
-- Đã kiểm tra khi viết: biên dịch bằng JDK 8; 16 JSP biên dịch bằng Jasper của Tomcat 9 và hiển thị được với dữ liệu giả; cú pháp T-SQL của các script; mọi câu SQL trong Java đối chiếu với bảng, view và số tham số của procedure; logic chia cửa sổ của `04_public_data.sql` chạy thử trên dữ liệu mẫu.
+- Đã kiểm tra khi viết: biên dịch bằng JDK 8; 32 JSP biên dịch bằng Jasper của Tomcat 9 và hiển thị được với dữ liệu giả (16 trang của giai đoạn 3 thử đủ bốn trường hợp: sửa, thêm mới, có lỗi, tài khoản chỉ đọc); cú pháp T-SQL của các script; mọi câu SQL trong Java đối chiếu với bảng, view và số tham số của procedure; logic chia cửa sổ của `04_public_data.sql` chạy thử trên dữ liệu mẫu.
 - **Chưa kiểm chứng được**: chưa chạy trên SQL Server thật, và chưa tải được bộ dữ liệu UCI, nên chưa có số accuracy/F1 và mức giảm báo nhầm thật. Lần chạy đầu trên máy nhóm cần theo dõi lỗi, và các bảng số trong báo cáo phải lấy từ kết quả chạy thật.
 - Mức báo động MQ-2 do `CompensationFitter` đề xuất (gấp đôi khoảng cách từ nền sạch tới mức cảnh báo) chỉ là giá trị tạm, vì dữ liệu công khai không có MAJOR_LEAK; cần nêu trong báo cáo.

@@ -11,3 +11,23 @@ document.addEventListener('click', function (event) {
         event.preventDefault();
     }
 });
+
+// Menu groups in the top bar: one open at a time, closed by a click elsewhere or by Escape.
+document.addEventListener('click', function (event) {
+    var open = document.querySelectorAll('details.nav-group[open]');
+    for (var i = 0; i < open.length; i++) {
+        if (!open[i].contains(event.target)) {
+            open[i].removeAttribute('open');
+        }
+    }
+});
+document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') {
+        return;
+    }
+    var open = document.querySelectorAll('details.nav-group[open]');
+    for (var i = 0; i < open.length; i++) {
+        open[i].removeAttribute('open');
+        open[i].querySelector('summary').focus();
+    }
+});

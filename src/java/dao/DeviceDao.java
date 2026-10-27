@@ -95,14 +95,7 @@ public class DeviceDao extends BaseDao {
     /** Device list page: code or location search, optional status filter, paging. */
     public PageResult<DeviceInfo> search(String keyword, String status, int page, int pageSize) throws SQLException {
         List<Object> params = new ArrayList<Object>();
-        String k = keyword == null ? "" : keyword;
-        StringBuilder where = new StringBuilder(" WHERE (d.device_code LIKE ? OR d.location LIKE ?)");
-        params.add("%" + k + "%");
-        params.add("%" + k + "%");
-        if (status != null && !status.isEmpty()) {
-            where.append(" AND d.status = ?");
-            params.add(status);
-        }
+        String where = deviceWhere(keyword, status, params);
         try (Connection conn = DbContext.getConnection()) {
             int total = count(conn, "SELECT COUNT(*) FROM Device d" + where, params);
             List<Object> pageParams = new ArrayList<Object>(params);
@@ -112,6 +105,27 @@ public class DeviceDao extends BaseDao {
                     + " ORDER BY d.device_id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", pageParams);
             return new PageResult<DeviceInfo>(items, page, pageSize, total);
         }
+    }
+
+    /** Every device matching the list filters, for the CSV export. */
+    public List<DeviceInfo> listForExport(String keyword, String status) throws SQLException {
+        List<Object> params = new ArrayList<Object>();
+        String where = deviceWhere(keyword, status, params);
+        try (Connection conn = DbContext.getConnection()) {
+            return queryDevices(conn, DEVICE_COLUMNS + where + " ORDER BY d.device_id", params);
+        }
+    }
+
+    private static String deviceWhere(String keyword, String status, List<Object> params) {
+        String k = keyword == null ? "" : keyword;
+        StringBuilder where = new StringBuilder(" WHERE (d.device_code LIKE ? OR d.location LIKE ?)");
+        params.add("%" + k + "%");
+        params.add("%" + k + "%");
+        if (status != null && !status.isEmpty()) {
+            where.append(" AND d.status = ?");
+            params.add(status);
+        }
+        return where.toString();
     }
 
     /**

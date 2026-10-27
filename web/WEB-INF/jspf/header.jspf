@@ -22,9 +22,38 @@
             <c:if test="${me.can('GASEVENT', 'READ')}"><a href="${ctx}/GasEventController">Sessions</a></c:if>
             <c:if test="${me.can('MAINTENANCE', 'READ')}"><a href="${ctx}/MaintenanceController?status=OPEN">Maintenance</a></c:if>
             <c:if test="${me.can('CONTROL', 'READ')}"><a href="${ctx}/ControlController">Control</a></c:if>
-            <c:if test="${me.can('KITCHENZONE', 'READ')}"><a href="${ctx}/KitchenZoneController">Kitchen zones</a></c:if>
-            <c:if test="${me.can('USER', 'READ')}"><a href="${ctx}/UserController">Users</a></c:if>
-            <c:if test="${me.can('AUDIT', 'READ')}"><a href="${ctx}/AuditController">Audit log</a></c:if>
+            <c:if test="${me.can('HOME', 'READ') or me.can('KITCHENZONE', 'READ') or me.can('ZONE_THRESHOLD', 'READ') or me.can('EMERGENCY_CONTACT', 'READ')}">
+                <details class="nav-group">
+                    <summary>Homes</summary>
+                    <div class="nav-menu">
+                        <c:if test="${me.can('HOME', 'READ')}"><a href="${ctx}/HomeController">Homes</a></c:if>
+                        <c:if test="${me.can('KITCHENZONE', 'READ')}"><a href="${ctx}/KitchenZoneController">Kitchen zones</a></c:if>
+                        <c:if test="${me.can('ZONE_THRESHOLD', 'READ')}"><a href="${ctx}/ZoneThresholdController">Zone thresholds</a></c:if>
+                        <c:if test="${me.can('EMERGENCY_CONTACT', 'READ')}"><a href="${ctx}/EmergencyContactController">Emergency contacts</a></c:if>
+                    </div>
+                </details>
+            </c:if>
+            <c:if test="${me.can('DEVICE', 'READ') or me.can('GAS_SENSOR', 'READ') or me.can('SENSOR_TYPE', 'READ') or me.can('CALIBRATION', 'READ') or me.can('PROFILE', 'READ')}">
+                <details class="nav-group">
+                    <summary>Devices</summary>
+                    <div class="nav-menu">
+                        <c:if test="${me.can('DEVICE', 'READ')}"><a href="${ctx}/DeviceController">Devices</a></c:if>
+                        <c:if test="${me.can('GAS_SENSOR', 'READ')}"><a href="${ctx}/GasSensorController">Gas sensors</a></c:if>
+                        <c:if test="${me.can('SENSOR_TYPE', 'READ')}"><a href="${ctx}/SensorTypeController">Sensor types</a></c:if>
+                        <c:if test="${me.can('CALIBRATION', 'READ')}"><a href="${ctx}/CalibrationController">Calibrations</a></c:if>
+                        <c:if test="${me.can('PROFILE', 'READ')}"><a href="${ctx}/OperatingProfileController">Compensation profiles</a></c:if>
+                    </div>
+                </details>
+            </c:if>
+            <c:if test="${me.can('USER', 'READ') or me.can('AUDIT', 'READ')}">
+                <details class="nav-group">
+                    <summary>Admin</summary>
+                    <div class="nav-menu">
+                        <c:if test="${me.can('USER', 'READ')}"><a href="${ctx}/UserController">Users</a></c:if>
+                        <c:if test="${me.can('AUDIT', 'READ')}"><a href="${ctx}/AuditController">Audit log</a></c:if>
+                    </div>
+                </details>
+            </c:if>
         </nav>
         <div class="who">
             <a class="who-name" href="${ctx}/AccountController" title="My account"><c:out value="${me.fullName}"/></a>

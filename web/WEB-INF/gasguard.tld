@@ -28,6 +28,11 @@
         <function-signature>java.lang.String signed(java.lang.Double)</function-signature>
     </function>
     <function>
+        <name>plain</name>
+        <function-class>util.ViewFunctions</function-class>
+        <function-signature>java.lang.String plain(java.lang.Double)</function-signature>
+    </function>
+    <function>
         <name>pct</name>
         <function-class>util.ViewFunctions</function-class>
         <function-signature>java.lang.String pct(java.lang.Double)</function-signature>
